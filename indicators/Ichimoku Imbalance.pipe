@@ -1,0 +1,55 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Esfiam
+
+//@version=5
+
+// indicator Version = 1.0
+
+indicator("Ichimoku Imbalance", overlay = true)
+string labelTexthigh=na
+string labelTextlow=na
+
+
+// External Variables 
+
+TenkansenPeriod = input.int(defval = 9 , title = 'Tenkansen' )
+KijunsenPeriod = input.int(defval = 26 , title = 'Kijunsen' )
+SpanBeriod = input.int(defval = 52 , title = 'Senko Span B')
+
+
+// Get High & Low Ichimoku Lines
+
+HighTenkansen = ta.highest(high,TenkansenPeriod)
+LowTenkansen = ta.lowest(low,TenkansenPeriod)
+HighKijunsen = ta.highest(high,KijunsenPeriod)
+LowKijunsen = ta.lowest(low,KijunsenPeriod)
+HighSpanB = ta.highest(high,SpanBeriod)
+LowSpanB = ta.lowest(low,SpanBeriod)
+
+// Imbalance Condition
+
+TenkansenImbalanceHigh = HighTenkansen == high and LowTenkansen == low[TenkansenPeriod-1]
+TenkansenImbalanceLow = LowTenkansen == low and HighTenkansen == high[TenkansenPeriod-1]
+KijunsenImbalanceHigh = HighKijunsen == high and LowKijunsen == low[KijunsenPeriod-1]
+KijunsenImbalanceLow = LowKijunsen == low and HighKijunsen == high[KijunsenPeriod-1]
+SpanBImbalanceHigh = HighSpanB == high and LowSpanB == low[SpanBeriod-1]
+SpanBImbalanceLow = LowSpanB == low and HighSpanB == high[SpanBeriod-1]
+
+
+
+// Draw Signal Bar
+
+if TenkansenImbalanceHigh or KijunsenImbalanceHigh or SpanBImbalanceHigh
+    labelTexthigh := labelTexthigh+'\n'+'■'
+
+if TenkansenImbalanceLow or KijunsenImbalanceLow or SpanBImbalanceLow
+    labelTextlow := labelTextlow+'■'
+
+
+
+
+if not na(labelTexthigh)
+    label.new(bar_index,high,text=labelTexthigh,style=label.style_none)
+    
+if not na(labelTextlow)
+    label.new(bar_index,low,text=labelTextlow,style=label.style_none)    

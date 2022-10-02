@@ -1,0 +1,39 @@
+//@version=3 
+study("Bollinger Imbalance Oscillator", precision=5) 
+
+src = input(defval=close, type=source, title="Source:") 
+length = input(20, minval=1, title="SMA Length:") 
+sma = sma(src, length) 
+stdev = stdev(src, length) 
+
+upper(mult) => sma+(stdev*mult) 
+lower(mult) => sma-(stdev*mult) 
+mid(mult) => (upper(mult)+lower(mult))/2 
+
+devMult = input(defval=2, type=float, title="Inner Std Dev:") 
+
+//plot(upper(devMult+2)-mid(devMult), color=red, transp=5, editable=false) 
+//plot(upper(devMult+1)-mid(devMult), color=red, transp=45, editable=false) 
+//plot(upper(devMult)-mid(devMult), color=red, transp=65, editable=false) 
+//plot(lower(devMult)-mid(devMult), color=green, transp=60, editable=false) 
+//plot(lower(devMult+1)-mid(devMult), color=green, transp=40, editable=false) 
+//plot(lower(devMult+2)-mid(devMult), color=green, transp=0, editable=false) 
+
+pricePoint = iff(low > mid(devMult), high, iff(high < mid(devMult), low, iff(high-mid(devMult) > mid(devMult)-low, high, low))) 
+
+distance = pricePoint-mid(devMult) 
+
+levelColor = iff(distance > upper(devMult+2)-mid(devMult) or distance < lower(devMult+2)-mid(devMult), #B22222, iff(distance > upper(devMult+1)-mid(devMult) or distance < lower(devMult+1)-mid(devMult), #FF8C00, iff(distance > upper(devMult)-mid(devMult) or distance < lower(devMult)-mid(devMult), #EEE8AA, #B0E0E6))) 
+
+plot(distance, color=levelColor, style=columns, transp=0, editable=false) 
+plot(-distance, style=columns, transp=100, editable=false) 
+
+//plotchar(distance[1] > upper(devMult)[1]-mid(devMult)[1] and distance > 0 and (distance < distance[1] or close < open) ? distance + (distance*0.25) : na, char="▼", transp=0, color=levelColor[1], location=location.absolute, editable=false) 
+//plotchar(distance[1] < lower(devMult)[1]-mid(devMult)[1] and distance < 0 and (distance > distance[1] or close > open) ? distance + (distance*0.25) : na, char="▲", transp=0, color=levelColor[1], location=location.absolute, editable=false) 
+
+bollingerWidth = (upper(devMult)-lower(devMult))/mid(devMult) 
+
+plot(0, color=bollingerWidth < ema(bollingerWidth, 5) ? black : silver, linewidth=2, style=circles, join=true, transp=0, editable=false) 
+
+signal = input(defval=5, title="Signal look-back:")
+plot(sma(distance, signal), color=blue, transp=20, editable=false) 
